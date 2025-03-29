@@ -31,7 +31,7 @@ func main() {
 		if strings.Count(command, "exit")==1 && strings.Index(command, "exit")==0{
 			os.Exit(0)
 		}else if strings.Count(command, "echo")==1 && strings.Index(command, "echo")==0{
-			fmt.Println(command[4:])
+			fmt.Println(strings.TrimSpace(command[4:]))
 		}else if strings.Count(command, "type")>=1 && strings.Index(command, "type")==0{
 			if search(command[4:], builtins){
 				fmt.Printf("%s is a shell builtin\n", strings.TrimSpace(command[4:]))
