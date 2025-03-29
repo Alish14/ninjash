@@ -12,7 +12,7 @@ var _ = fmt.Fprint
 
 func search(command string, builtins []string) bool {
 	for _, builtin := range builtins {
-		if builtin == command {
+		if builtin == strings.TrimSpace(command) {
 			return true
 		}
 	}
@@ -20,7 +20,7 @@ func search(command string, builtins []string) bool {
 }
 
 func main() {
-	var builtins = []string{"exit", "echo", "type"}
+	var builtins = []string{"exit","echo","type"}
 	// Uncomment this block to pass the first stage
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
@@ -31,12 +31,13 @@ func main() {
 		if strings.Count(command, "exit")==1 && strings.Index(command, "exit")==0{
 			os.Exit(0)
 		}else if strings.Count(command, "echo")==1 && strings.Index(command, "echo")==0{
-			fmt.Println(command[5:])
-		}else if strings.Count(command, "type")==1 && strings.Index(command, "type")==0{
-			if search(command[5:], builtins){
+			fmt.Println(command[4:])
+		}else if strings.Count(command, "type")>=1 && strings.Index(command, "type")==0{
+			if search(command[4:], builtins){
 				fmt.Printf("%s is a shell builtin\n", command[5:])
 			}else{
-				fmt.Println(command[:len(command)] + ": command not found")
+
+				fmt.Println(command[4:len(command)] + ": command not found")
 			}
 		}else{
 			fmt.Println(command[:len(command)] + ": command not found")
