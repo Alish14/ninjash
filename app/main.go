@@ -20,10 +20,10 @@ func main() {
 		command = strings.TrimSpace(command)
 		if strings.Count(command, "exit")==1 && strings.Index(command, "exit")==0{
 			os.Exit(0)
-		}
-		if strings.Count(command, "echo")==1 && strings.Index(command, "echo")==0{
+		}else if strings.Count(command, "echo")==1 && strings.Index(command, "echo")==0{
 			fmt.Println(command[5:])
+		}else{
+			fmt.Println(command[:len(command)] + ": command not found")
 		}
-		fmt.Println(command[:len(command)-1] + ": command not found")
 	}
 }
