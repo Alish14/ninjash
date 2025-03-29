@@ -34,10 +34,10 @@ func main() {
 			fmt.Println(command[4:])
 		}else if strings.Count(command, "type")>=1 && strings.Index(command, "type")==0{
 			if search(command[4:], builtins){
-				fmt.Printf("%s is a shell builtin\n", command[5:])
+				fmt.Printf("%s is a shell builtin\n", strings.TrimSpace(command[4:]))
 			}else{
 
-				fmt.Println(command[4:len(command)] + ": command not found")
+				fmt.Println(strings.TrimSpace(command[4:len(command)]) + ": command not found")
 			}
 		}else{
 			fmt.Println(command[:len(command)] + ": command not found")
