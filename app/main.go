@@ -37,7 +37,7 @@ func main() {
 				fmt.Printf("%s is a shell builtin\n", strings.TrimSpace(command[4:]))
 			}else{
 
-				fmt.Println(strings.TrimSpace(command[4:len(command)]) + ": command not found")
+				fmt.Println(strings.TrimSpace(command[4:len(command)]) + ": not found")
 			}
 		}else{
 			fmt.Println(command[:len(command)] + ": command not found")
