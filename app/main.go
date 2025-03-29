@@ -16,10 +16,15 @@ func main() {
 
 		// Wait for user input
 		command, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-		if command == "exit 0\n" {
+		switch command {
+		case "exit 0":
 			os.Exit(0)
+		case "echo":
+			fmt.Println(command[:len(command)-1])
+		default:
+			fmt.Println(command[:len(command)-1] + ": command not found")
 		}
 
-		fmt.Println(command[:len(command)-1] + ": command not found")
+		// fmt.Println(command[:len(command)-1] + ": command not found")
 	}
 }
