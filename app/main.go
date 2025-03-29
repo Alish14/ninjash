@@ -24,6 +24,6 @@ func main() {
 		if strings.Count(command, "echo")==1 && strings.Index(command, "echo")==0{
 			fmt.Println(command[5:])
 		}
-		// fmt.Println(command[:len(command)-1] + ": command not found")
+		fmt.Println(command[:len(command)-1] + ": command not found")
 	}
 }
