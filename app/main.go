@@ -10,7 +10,17 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Fprint
 
+func search(command string, builtins []string) bool {
+	for _, builtin := range builtins {
+		if builtin == command {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
+	var builtins = []string{"exit", "echo", "type"}
 	// Uncomment this block to pass the first stage
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
@@ -22,6 +32,12 @@ func main() {
 			os.Exit(0)
 		}else if strings.Count(command, "echo")==1 && strings.Index(command, "echo")==0{
 			fmt.Println(command[5:])
+		}else if strings.Count(command, "type")==1 && strings.Index(command, "type")==0{
+			if search(command[5:], builtins){
+				fmt.Println("shell built-in command")
+			}else{
+				fmt.Println(command[:len(command)] + ": command not found")
+			}
 		}else{
 			fmt.Println(command[:len(command)] + ": command not found")
 		}
