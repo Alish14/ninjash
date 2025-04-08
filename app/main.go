@@ -17,12 +17,12 @@ func search(command string, builtins []string) string {
 	command =strings.TrimSpace(command)
 	for _, builtin := range builtins {
 		if builtin == command {
-			return fmt.Sprintf("%s is a shell builtin\n", strings.TrimSpace(builtin))
+			return fmt.Sprintf("%s is a shell builtin", strings.TrimSpace(builtin))
 		}
 	}
 
 	if path, err := exec.LookPath(command); err == nil {
-        return fmt.Sprintf("%s is %s\n", command, path)
+        return fmt.Sprintf("%s is %s", command, path)
 		} 
 	return fmt.Sprintf("%s: not found",strings.TrimSpace(command))
 }
