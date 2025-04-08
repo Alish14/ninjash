@@ -4,23 +4,34 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 )
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Fprint
 
-func search(command string, builtins []string) bool {
+
+
+func search(command string, builtins []string) string {
+	command =strings.TrimSpace(command)
 	for _, builtin := range builtins {
-		if builtin == strings.TrimSpace(command) {
-			return true
+		if builtin == command {
+			return fmt.Sprintf("%s is a shell builtin\n", strings.TrimSpace(builtin))
 		}
 	}
-	return false
+
+	if path, err := exec.LookPath(command); err == nil {
+        return fmt.Sprintf("%s is %s\n", command, path)
+		} 
+	return fmt.Sprintf("%s: not found",strings.TrimSpace(command))
 }
 
 func main() {
 	var builtins = []string{"exit","echo","type"}
+	path := os.Getenv("PATH")
+	paths := strings.Split(path, ":")
+	fmt.Println(paths)
 	// Uncomment this block to pass the first stage
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
@@ -33,12 +44,7 @@ func main() {
 		}else if strings.Count(command, "echo")==1 && strings.Index(command, "echo")==0{
 			fmt.Println(strings.TrimSpace(command[4:]))
 		}else if strings.Count(command, "type")>=1 && strings.Index(command, "type")==0{
-			if search(command[4:], builtins){
-				fmt.Printf("%s is a shell builtin\n", strings.TrimSpace(command[4:]))
-			}else{
-
-				fmt.Println(strings.TrimSpace(command[4:len(command)]) + ": not found")
-			}
+			fmt.Println(search(command[4:],builtins))
 		}else{
 			fmt.Println(command[:len(command)] + ": command not found")
 		}
