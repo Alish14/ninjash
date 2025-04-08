@@ -6,12 +6,18 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"log"
 )
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Fprint
 
-
+func findExec(command string)bool{
+	if _, err := exec.LookPath(command); err == nil {
+        return true
+		}
+	return false 
+}
 
 func search(command string, builtins []string) string {
 	command =strings.TrimSpace(command)
@@ -29,9 +35,7 @@ func search(command string, builtins []string) string {
 
 func main() {
 	var builtins = []string{"exit","echo","type"}
-	path := os.Getenv("PATH")
-	paths := strings.Split(path, ":")
-	fmt.Println(paths)
+	//fmt.Println(paths)
 	// Uncomment this block to pass the first stage
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
@@ -39,12 +43,19 @@ func main() {
 		// Wait for user input
 		command, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 		command = strings.TrimSpace(command)
+		commandSlice:=strings.Split(command," ")
 		if strings.Count(command, "exit")==1 && strings.Index(command, "exit")==0{
 			os.Exit(0)
 		}else if strings.Count(command, "echo")==1 && strings.Index(command, "echo")==0{
 			fmt.Println(strings.TrimSpace(command[4:]))
 		}else if strings.Count(command, "type")>=1 && strings.Index(command, "type")==0{
 			fmt.Println(search(command[4:],builtins))
+		}else if findExec(commandSlice[0]){
+			out, err := exec.Command(commandSlice[0]).Output()
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("%s", out)
 		}else{
 			fmt.Println(command[:len(command)] + ": command not found")
 		}
