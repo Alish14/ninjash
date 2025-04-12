@@ -3,24 +3,24 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
 	"log"
 )
 
-// Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
-var _ = fmt.Fprint
+var _ = fmt.Fprint 	
 
-func findExec(command string)bool{
+func findExec(command string) bool {
 	if _, err := exec.LookPath(command); err == nil {
-        return true
-		}
-	return false 
+		return true
+	}
+	return false
 }
 
 func search(command string, builtins []string) string {
-	command =strings.TrimSpace(command)
+	command = strings.TrimSpace(command)
 	for _, builtin := range builtins {
 		if builtin == command {
 			return fmt.Sprintf("%s is a shell builtin", strings.TrimSpace(builtin))
@@ -28,47 +28,103 @@ func search(command string, builtins []string) string {
 	}
 
 	if path, err := exec.LookPath(command); err == nil {
-        return fmt.Sprintf("%s is %s", command, path)
-		} 
-	return fmt.Sprintf("%s: not found",strings.TrimSpace(command))
+		return fmt.Sprintf("%s is %s", command, path)
+	}
+	return fmt.Sprintf("%s: not found", strings.TrimSpace(command))
 }
 
 func main() {
-	var builtins = []string{"exit","echo","type"}
-	//fmt.Println(paths)
-	// Uncomment this block to pass the first stage
+	var builtins = []string{"exit", "echo", "type", "cd", "cat"}
+	homeDir := os.Getenv("HOME")
+
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 
-		// Wait for user input
-		homwDir:=os.Getenv("HOME")
-		command, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-		command = strings.TrimSpace(command)
-		commandSlice:=strings.Split(command," ")
-		if commandSlice[0]=="exit"{
-			os.Exit(0)
-		}else if strings.Count(command, "echo")==1 && strings.Index(command, "echo")==0{
-			fmt.Println(strings.TrimSpace(command[4:]))
-		}else if commandSlice[0]=="type"{
-			fmt.Println(search(commandSlice[1],builtins))
-		}else if findExec(commandSlice[0]){
-			out, err := exec.Command(commandSlice[0]).Output()
-			if err != nil {
-				log.Fatal(err)
+		reader := bufio.NewReader(os.Stdin)
+		command, err := reader.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				os.Exit(0)
 			}
-			fmt.Printf("%s", out)
-		}else if commandSlice[0]=="cd"{
-			if len(commandSlice)==1 || commandSlice[1]=="~" {
-				_=os.Chdir(homwDir)
-			}else{
-				err:=os.Chdir(commandSlice[1])
-				if err !=nil{
-					fmt.Printf("cd: %s: No such file or directory\n",commandSlice[1])
-				}
+			log.Fatal(err)
+		}
+
+		command = strings.TrimSpace(command)
+		if command == "" {
+			continue
+		}
+
+		commandSlice := strings.Fields(command)
+		if len(commandSlice) == 0 {
+			continue
+		}
+
+		switch commandSlice[0] {
+		case "exit":
+			os.Exit(0)
+
+		case "type":
+			if len(commandSlice) > 1 {
+				fmt.Println(search(commandSlice[1], builtins))
+			} else {
+				fmt.Println("type: missing argument")
 			}
 
-		}else{
-			fmt.Println(command[:len(command)] + ": command not found")
+		case "cd":
+			targetDir := homeDir
+			if len(commandSlice) > 1 {
+				if commandSlice[1] == "~" {
+					targetDir = homeDir
+				} else {
+					targetDir = commandSlice[1]
+				}
+			}
+			if err := os.Chdir(targetDir); err != nil {
+				fmt.Printf("cd: %s: No such file or directory\n", targetDir)
+			}
+
+		case "echo":
+			args := strings.Join(commandSlice[1:], " ")
+			if len(args) > 0 {
+				if (strings.HasPrefix(args, "'") && strings.HasSuffix(args, "'")) ||
+					(strings.HasPrefix(args, "\"") && strings.HasSuffix(args, "\"")) {
+					args = args[1 : len(args)-1]
+				}
+				fmt.Println(args)
+			} else {
+				fmt.Println()
+			}
+
+		case "cat":
+			if len(commandSlice) < 2 {
+				fmt.Println("cat: missing file operand")
+				continue
+			}
+			for _, filename := range commandSlice[1:] {
+				filename=strings.ReplaceAll(filename,"'","")
+				filename=strings.ReplaceAll(filename,"\"","")
+				file, err := os.Open(filename)
+				if err != nil {
+					fmt.Printf("cat: %s: No such file or directory\n", filename)
+					continue
+				}
+				_, err = io.Copy(os.Stdout, file)
+				if err != nil {
+					fmt.Printf("cat: error reading %s\n", filename)
+				}
+				file.Close()
+				fmt.Println()
+			}
+
+		default:
+			if findExec(commandSlice[0]) {
+				cmd := exec.Command(commandSlice[0], commandSlice[1:]...)
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				_= cmd.Run();
+			} else {
+				fmt.Printf("%s: command not found\n", commandSlice[0])
+			}
 		}
 	}
 }
